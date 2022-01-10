@@ -1,4 +1,3 @@
-
 const { User } = require('../models');
 
 const userController = {
@@ -86,40 +85,30 @@ const userController = {
             { $push: { friends: params.friendId } },
             { new: true }
         )
-        .then(dbPizzaData => {
-            if (!dbPizzaData) {
+        .then(dbFriendData => {
+            if (!dbFriendData) {
               res.status(404).json({ message: 'No pizza found with this id!' });
               return;
             }
-            res.json(dbPizzaData);
+            res.json(dbFriendData);
         })
         .catch(err => {
             console.log(err);
             res.status(400).json(err);
         })
-
-        User.findOne({ _id: params.friendId })
-            .then(dbFriendData => {
-                if(!dbFriendData) {
-                    res.status(404).json({ message: 'No user to add with this id.' });
-                    return false
-                }
-                return 'User is Found'
-            })
-            .then(foundFriend => {
-                if (foundFriend) {
-                    return [User.findOne({ _id: params.userId }).friends, JSON.stringify(foundFriend)]
-                }
-
-                return [false, foundFriend];
-            })
-            .then(dbUserData => {
-                console.log(dbUserData)
-            })
     },
 
-    deleteFriend({ params }, res) {
-        
+    removeFriend({ params }, res) {
+        User.findOneAndUpdate (
+            { _id: params.userId },
+            { $pull: { friends: params.friendId  } },
+            { new: true }
+        )
+        .then(dbFriendData => res.json(dbFriendData))
+        .catch(err => {
+            console.log(err);
+            res.status(400).json(err);
+        })
     }
 }
 
