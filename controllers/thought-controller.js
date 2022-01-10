@@ -1,4 +1,5 @@
 const { User , Thought } = require('../models');
+const { param } = require('../routes/api');
 
 const thoughtController = {
     getAllThought(req, res) {
@@ -102,6 +103,38 @@ const thoughtController = {
                 res.status(400).json(err);
             })
     },
+
+    addReaction({ params, body }, res) {
+        Thought.findOneAndUpdate(
+            { _id: params.id },
+            { $push: { reactions: body } },
+            { new: true, runValidators: true }
+        )
+            .then(dbReactionData => {
+                if (!dbReactionData) {
+                res.status(404).json({ message: 'No thought found with this id!' });
+                return;
+                }
+                res.json(dbReactionData);
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(400).json(err);
+            })
+    },
+
+    removeReaction({ params }, res) {
+        Thought.findOneAndUpdate(
+            { _id: params.thoughtId },
+            { $pull: { reactions: { reactionId: params.reactionId } } },
+            { new: true }
+        )
+            .then(dbReactionData => res.json(dbReactionData))
+            .catch(err => {
+                console.log(err);
+                res.status(400).json(err);
+            })
+    }
 }
 
 module.exports = thoughtController;
